@@ -36,6 +36,8 @@ public class AutoDtoAttribute : Attribute
     public AutoDtoAttribute(string? customName, string[] dtoNames, Type? targetType = null,
         Type? convertor = null)
     {
+        // if (targetType != null && convertor == null)
+            // throw new ArgumentNullException(nameof(convertor),"Convertor can't bu null when targetType is used");
         // if (targetType != null && convertor != null)
         // {
         //     if(!targetType.IsAssignableFrom(convertor.Value.toDtoConvertor.Method.ReturnType))

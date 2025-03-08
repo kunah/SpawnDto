@@ -118,27 +118,59 @@ public class ClassGenerator
                 atr.TargetType != null? atr.TargetType!.FullName ?? atr.TargetType!.Name : memberType.FullName ?? memberType.Name
             );
 
+        var defaultValue = GetMemberValue(info);
+        
+        var valueExpression = GetLiteralExpression(defaultValue, memberType);
 
         var property = SyntaxFactory.PropertyDeclaration(
-                    propertyType,
-                    SyntaxFactory.Identifier(info.Name))
-                .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
-                .AddAccessorListAccessors(
-                    // Adding the getter
-                    SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                    // Adding the setter
-                    SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
-                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
-                )
+                propertyType,
+                SyntaxFactory.Identifier(info.Name))
+            .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+            .AddAccessorListAccessors(
+                // Adding the getter
+                SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
+                // Adding the setter
+                SyntaxFactory.AccessorDeclaration(SyntaxKind.SetAccessorDeclaration)
+                    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+            );
+            
+        if(defaultValue != GetDefaultValue(memberType))
+            property = property.WithInitializer(SyntaxFactory.EqualsValueClause(valueExpression))
+            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
             // .WithInitializer(SyntaxFactory.EqualsValueClause(SyntaxFactory.LiteralExpression()))
-            ;
         
 
         
         return property;
     }
 
+    private ExpressionSyntax GetLiteralExpression(object? value, Type type)
+    {
+        if (value == null)
+            return SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression);
+
+        if (type == typeof(int))
+            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal((int)value));
+
+        if (type == typeof(double))
+            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal((double)value));
+
+        if (type == typeof(bool))
+            return (bool)value
+                ? SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)
+                : SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression);
+
+        if (type == typeof(string))
+            return SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal((string)value));
+
+        if(type == typeof(float))
+            return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal((float)value));
+        
+        // Fallback: Use "default(Type)"
+        return SyntaxFactory.DefaultExpression(SyntaxFactory.ParseTypeName(type.FullName ?? type.Name));
+    }
+    
     private Type GetMemberType(MemberInfo memberInfo)
     {
         if(memberInfo is PropertyInfo property)
@@ -146,6 +178,23 @@ public class ClassGenerator
         if(memberInfo is FieldInfo field)
             return field.FieldType;
         throw new ArgumentException("Invalid member info");
+    }
+    
+    private object? GetMemberValue(MemberInfo memberInfo)
+    {
+        var tmpInstance = Activator.CreateInstance(memberInfo.ReflectedType);
+        if(memberInfo is PropertyInfo property)
+            return property.GetValue(tmpInstance);
+        if(memberInfo is FieldInfo field)
+            return field.GetValue(tmpInstance);
+        throw new ArgumentException("Invalid member info");
+    }
+    
+    public object? GetDefaultValue(Type type)
+    {
+        if (type.IsValueType)
+            return Activator.CreateInstance(type); // Default for value types
+        return null; // Default for reference types
     }
     
     private void SaveClass(CompilationUnitSyntax cu, string filePath)

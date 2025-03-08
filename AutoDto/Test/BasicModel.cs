@@ -11,7 +11,7 @@ public class AnotherModel
 [GenerateDto("BasicModelDto", "FullBasic")]
 public class BasicModel
 {
-    [AutoDto([ "FullBasic"], typeof(int))]
+    // [AutoDto([ "FullBasic"], typeof(int))]
     [AutoDto(["BasicModelDto"])]
     public string Test { get; set; } = "test";
     
