@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AutoDto", "AutoDto\AutoDto.csproj", "{98DFA0A0-3F6B-4995-A4F9-DBA98F8548DB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{98DFA0A0-3F6B-4995-A4F9-DBA98F8548DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98DFA0A0-3F6B-4995-A4F9-DBA98F8548DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98DFA0A0-3F6B-4995-A4F9-DBA98F8548DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98DFA0A0-3F6B-4995-A4F9-DBA98F8548DB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
