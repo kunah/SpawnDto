@@ -1,10 +1,11 @@
 using System;
+using AutoDto.Attributes;
 
 namespace AutoDto.Test.Dto
 {
     public partial class FullBasic
     {
-        public AutoDto.Attributes.AutoDtoAttribute AnotherModel { get; set; }
-        public System.String Name { get; set; } = "";
+        public AutoDtoAttribute AnotherModel { get; set; }
+        public String Name { get; set; } = "";
     }
 }

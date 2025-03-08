@@ -21,28 +21,38 @@ public class ClassGenerator
         
         foreach (var name in atr.Names)
         {
-            var dto = GenerateDto(classType, name);
-            var cu = GenerateTemplate(classType, dto);
+            HashSet<string> namespaces = new HashSet<string>();
+            
+            var dto = GenerateDto(classType, name, namespaces);
+            var cu = GenerateTemplate(classType, dto, namespaces);
             SaveClass(cu, Path.Combine(outputPath,  name + ".cs"));
         }
         
 
     }
 
-    private CompilationUnitSyntax GenerateTemplate(Type classType, ClassDeclarationSyntax classDeclarationSyntax)
+    private CompilationUnitSyntax GenerateTemplate(Type classType, ClassDeclarationSyntax classDeclarationSyntax, HashSet<string> namespaces)
     {
 
         var cu = SyntaxFactory.CompilationUnit()
-            .AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")))
+            // .AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")))
             .AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName((classType.Namespace ??
                 classType.Name) + ".Dto"))
                 .AddMembers(classDeclarationSyntax)
             );
 
+        // lexicographically sorted
+        namespaces
+            .OrderBy(w => w.Length)
+            .ToList()
+            .ForEach(
+                w => cu = cu.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(w)))
+            );
+
         return cu;
     }
 
-    private ClassDeclarationSyntax GenerateDto(Type classType, string className)
+    private ClassDeclarationSyntax GenerateDto(Type classType, string className, HashSet<string> namespaces)
     {
         var newClass = SyntaxFactory.ClassDeclaration(className)
             .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
@@ -61,7 +71,7 @@ public class ClassGenerator
                 }
                 return false;
             }).ToList();
-        fields.ForEach(x => newClass = newClass.AddMembers(GenerateProperty(x, className)));
+        fields.ForEach(x => newClass = newClass.AddMembers(GenerateProperty(x, className, namespaces)));
         
         
         
@@ -86,7 +96,7 @@ public class ClassGenerator
     //
     // }
 
-    private PropertyDeclarationSyntax GenerateProperty(MemberInfo info, string className)
+    private PropertyDeclarationSyntax GenerateProperty(MemberInfo info, string className, HashSet<string> namespaces)
     {
         Attribute? attribute = null;
         
@@ -108,14 +118,17 @@ public class ClassGenerator
 
 
         var memberType = GetMemberType(info);
-        
+
+        if (memberType.Namespace != null) 
+            namespaces.Add(memberType.Namespace);
+
         if (info.GetCustomAttribute(typeof(NullableAttribute)) != null)
             propertyType = SyntaxFactory.NullableType(SyntaxFactory.ParseTypeName(
-                atr.TargetType != null ? atr.TargetType!.FullName ?? atr.TargetType!.Name : memberType.FullName ?? memberType.Name
+                atr.TargetType != null ? atr.TargetType!.Name : memberType.Name
             ));
         else
             propertyType = SyntaxFactory.ParseTypeName(
-                atr.TargetType != null? atr.TargetType!.FullName ?? atr.TargetType!.Name : memberType.FullName ?? memberType.Name
+                atr.TargetType != null? atr.TargetType!.Name : memberType.Name
             );
 
         var defaultValue = GetMemberValue(info);
@@ -182,6 +195,8 @@ public class ClassGenerator
     
     private object? GetMemberValue(MemberInfo memberInfo)
     {
+        if(memberInfo.ReflectedType == null)
+            throw new ArgumentException("Member reflected type is null");
         var tmpInstance = Activator.CreateInstance(memberInfo.ReflectedType);
         if(memberInfo is PropertyInfo property)
             return property.GetValue(tmpInstance);
@@ -190,7 +205,7 @@ public class ClassGenerator
         throw new ArgumentException("Invalid member info");
     }
     
-    public object? GetDefaultValue(Type type)
+    private object? GetDefaultValue(Type type)
     {
         if (type.IsValueType)
             return Activator.CreateInstance(type); // Default for value types
