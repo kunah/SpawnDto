@@ -3,15 +3,18 @@ using AutoDto.Attributes;
 
 namespace AutoDto.Test;
 
-public class AnotherModel
+public static class BasicConvertor
 {
-    
+    public static int ToInt(string value)
+    {
+        return 100;
+    }
 }
 
 [GenerateDto("BasicModelDto", "FullBasic")]
 public class BasicModel
 {
-    // [AutoDto([ "FullBasic"], typeof(int))]
+    [AutoDto(["FullBasic"], typeof(int), typeof(BasicConvertor), nameof(BasicConvertor.ToInt))]
     [AutoDto(["BasicModelDto"])]
     public string Test { get; set; } = "test";
     

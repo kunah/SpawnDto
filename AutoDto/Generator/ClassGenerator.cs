@@ -98,7 +98,7 @@ public class ClassGenerator
 
     private PropertyDeclarationSyntax GenerateProperty(MemberInfo info, string className, HashSet<string> namespaces)
     {
-        Attribute? attribute = null;
+        AutoDtoAttribute? attribute = null;
         
         
         var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
@@ -111,27 +111,27 @@ public class ClassGenerator
             attribute = atrref;
             break;
         }
-        if(attribute == null || !(attribute is AutoDtoAttribute atr))
+        if(attribute == null)
             throw new ArgumentException("Argument null or missing AutoDtoAttribute");
         
         TypeSyntax propertyType;
 
-
-        var memberType = GetMemberType(info);
+        // custom target type has bigger priority
+        var memberType = attribute.TargetType ?? GetMemberType(info);
 
         if (memberType.Namespace != null) 
             namespaces.Add(memberType.Namespace);
 
         if (info.GetCustomAttribute(typeof(NullableAttribute)) != null)
             propertyType = SyntaxFactory.NullableType(SyntaxFactory.ParseTypeName(
-                atr.TargetType != null ? atr.TargetType!.Name : memberType.Name
+                memberType.Name
             ));
         else
             propertyType = SyntaxFactory.ParseTypeName(
-                atr.TargetType != null? atr.TargetType!.Name : memberType.Name
+                memberType.Name
             );
 
-        var defaultValue = GetMemberValue(info);
+        var defaultValue = GetMemberValue(info, attribute);
         
         var valueExpression = GetLiteralExpression(defaultValue, memberType);
 
@@ -193,16 +193,29 @@ public class ClassGenerator
         throw new ArgumentException("Invalid member info");
     }
     
-    private object? GetMemberValue(MemberInfo memberInfo)
+    private object? GetMemberValue(MemberInfo memberInfo, AutoDtoAttribute atr)
     {
+        object? value = null;
         if(memberInfo.ReflectedType == null)
             throw new ArgumentException("Member reflected type is null");
         var tmpInstance = Activator.CreateInstance(memberInfo.ReflectedType);
         if(memberInfo is PropertyInfo property)
-            return property.GetValue(tmpInstance);
-        if(memberInfo is FieldInfo field)
-            return field.GetValue(tmpInstance);
-        throw new ArgumentException("Invalid member info");
+            value = property.GetValue(tmpInstance);
+        else if(memberInfo is FieldInfo field)
+            value = field.GetValue(tmpInstance);
+        else
+            throw new ArgumentException("Invalid member info");
+        
+        if (atr.Convertor != null)
+        {
+            var method = atr.Convertor.GetMethod(atr.MethodName!);
+
+            // we know that the method exists thanks to AutoDtoAttribute constructor
+            return method!.Invoke(null, [value]);
+        }
+        
+
+        return value;
     }
     
     private object? GetDefaultValue(Type type)
