@@ -100,7 +100,6 @@ public class ClassGenerator
     {
         AutoDtoAttribute? attribute = null;
         
-        
         var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
         foreach (var potentionalAttribute in attributes)
         {
@@ -208,10 +207,10 @@ public class ClassGenerator
         
         if (atr.Convertor != null)
         {
-            var method = atr.Convertor.GetMethod(atr.MethodName!);
+            var toDtoMethod = atr.Convertor.GetMethod(atr.ToDtoMethod!);
 
             // we know that the method exists thanks to AutoDtoAttribute constructor
-            return method!.Invoke(null, [value]);
+            return toDtoMethod!.Invoke(null, [value]);
         }
         
 

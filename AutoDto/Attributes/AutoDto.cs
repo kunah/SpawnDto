@@ -1,5 +1,5 @@
+using System.Reflection;
 using System.Runtime.CompilerServices;
-using AutoDto.Interfaces;
 
 namespace AutoDto.Attributes;
 
@@ -19,8 +19,11 @@ public class AutoDtoAttribute : Attribute
     
     private readonly Type? _convertor; // convertor for this field
     public Type? Convertor => _convertor;
-    private readonly string? _methodName; // converting method
-    public string? MethodName => _methodName;
+    
+    private readonly string? _toDtoMethod; // converting method
+    private readonly string? _fromDtoMethod; // converting method
+    public string? ToDtoMethod => _toDtoMethod;
+    public string? FromDtoMethod => _fromDtoMethod;
 
     public AutoDtoAttribute() : this(null, []) {}
 
@@ -30,27 +33,37 @@ public class AutoDtoAttribute : Attribute
 
     public AutoDtoAttribute(string? customName, string[] dtoNames) : this(customName, dtoNames, null) {}
 
-    public AutoDtoAttribute(string? customName, Type? targetType = null, Type? convertor = null, string? methodName = null)
-        : this(customName, [], targetType, convertor, methodName) {}
+    public AutoDtoAttribute(string? customName, Type? targetType = null, Type? convertor = null,
+        string? toDtoMethod = null, string? fromDtoMethod = null)
+        : this(customName, [], targetType, convertor, toDtoMethod, fromDtoMethod) {}
     
     public AutoDtoAttribute(string[] dtoNames, Type? targetType = null,
-        Type? convertor = null, string? methodName = null)
-        : this(null, dtoNames, targetType, convertor, methodName) { }
+        Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null)
+        : this(null, dtoNames, targetType, convertor, toDtoMethod, fromDtoMethod) { }
     
     public AutoDtoAttribute(string? customName, string[] dtoNames, Type? targetType = null,
-        Type? convertor = null, string? methodName = null)
+        Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null)
     {
         if (targetType != null && convertor == null)
             throw new ArgumentNullException(nameof(convertor),"Convertor can't be null when targetType is used!");
         if (convertor != null)
         {
-            if (methodName == null)
-                throw new ArgumentNullException(nameof(methodName), "Method name can't be null when convertor is used!");    
-            var method = convertor.GetMethod(methodName);
-            if(method == null || !method.IsStatic || method.IsPrivate)
-                throw new ArgumentNullException(nameof(method), "Can't access method");
-            if(targetType != null && method.ReturnType != targetType)
+            if (toDtoMethod == null)
+                throw new ArgumentNullException(nameof(toDtoMethod), "Method name can't be null when convertor is used!");    
+            if (fromDtoMethod == null)
+                throw new ArgumentNullException(nameof(fromDtoMethod), "Method name can't be null when convertor is used!");    
+            var methodToDto = convertor.GetMethod(toDtoMethod);
+            var methodFromDto = convertor.GetMethod(fromDtoMethod);
+            if(methodToDto == null || !methodToDto.IsStatic || methodToDto.IsPrivate)
+                throw new ArgumentNullException(nameof(toDtoMethod), "Can't access method");
+            if(methodFromDto == null || !methodFromDto.IsStatic || methodFromDto.IsPrivate)
+                throw new ArgumentNullException(nameof(fromDtoMethod), "Can't access method");
+            if(targetType != null && methodToDto.ReturnType != targetType &&
+               methodFromDto.GetParameters().Length != 1 && methodFromDto.GetParameters()[0].ParameterType != targetType)
                 throw new ArgumentNullException(nameof(targetType),"Method has to have the same return type!");
+            
+            _toDtoMethod = toDtoMethod;
+            _fromDtoMethod = fromDtoMethod;
         }
         // if (targetType != null && convertor != null)
         // {
@@ -69,7 +82,6 @@ public class AutoDtoAttribute : Attribute
         _dtos = dtoNames;
         _targetType = targetType;
         _convertor = convertor;
-        _methodName = methodName;
     }
         
 }
