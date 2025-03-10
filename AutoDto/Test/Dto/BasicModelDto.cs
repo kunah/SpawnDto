@@ -8,6 +8,6 @@ namespace AutoDto.Test.Dto
         public String? Test { get; set; } = "test";
         public AutoDtoAttribute AnotherModel { get; set; }
         public Single Test2 { get; set; } = 1.1F;
-        public String Name { get; set; } = "";
+        public String DtoName { get; set; } = "";
     }
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using AutoDto.Attributes;
+using AutoDto.Test.Dto;
 
 namespace AutoDto.Test;
 
@@ -12,7 +13,7 @@ public static class BasicConvertor
 
     public static string ToField(int dto)
     {
-        throw new NotImplementedException();
+        return dto.ToString();
     }
 }
 
@@ -26,7 +27,7 @@ public class BasicModel
     [AutoDto(["BasicModelDto"])]
     public float Test2 = 1.1f;
 
-    [AutoDto] 
+    [AutoDto("DtoName")] 
     public string? Name = string.Empty;
     
     [AutoDto, Required]

@@ -12,6 +12,7 @@ public class AutoDtoAttribute : Attribute
 {
 
     private readonly string? _customName; // name of the property in the dto
+    public string? CustomName => _customName;
     private readonly string[] _dtos; // in which dtos it's contained
     public string[] Dtos => _dtos;
     private readonly Type? _targetType; // dto Type

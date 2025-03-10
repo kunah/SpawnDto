@@ -19,15 +19,22 @@ public class ClassGenerator
         if (attribute == null || !(attribute is GenerateDtoAttribute atr))
             throw new ArgumentNullException($"{classType.FullName} does not have a GenerateDtoAttribute");
         
+        List<MethodDeclarationSyntax> methods = new ();
+        
         foreach (var name in atr.Names)
         {
             HashSet<string> namespaces = new HashSet<string>();
             
             var dto = GenerateDto(classType, name, namespaces);
+            methods.Add(GenerateConvertorMethod(classType, name));
             var cu = GenerateTemplate(classType, dto, namespaces);
             SaveClass(cu, Path.Combine(outputPath,  name + ".cs"));
         }
         
+        var convertor = GenerateConvertorClass(classType, methods);
+        var convertorCu = GenerateTemplate(classType, convertor, []);
+        SaveClass(convertorCu, Path.Combine(outputPath,  classType.Name + "Convertor.cs"));
+
 
     }
 
@@ -35,13 +42,11 @@ public class ClassGenerator
     {
 
         var cu = SyntaxFactory.CompilationUnit()
-            // .AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("System")))
             .AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName((classType.Namespace ??
                 classType.Name) + ".Dto"))
                 .AddMembers(classDeclarationSyntax)
             );
-
-        // lexicographically sorted
+        
         namespaces
             .OrderBy(w => w.Length)
             .ToList()
@@ -57,7 +62,7 @@ public class ClassGenerator
         var newClass = SyntaxFactory.ClassDeclaration(className)
             .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
         
-        var fields = classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
+        classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>
             {
                 var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
@@ -70,32 +75,115 @@ public class ClassGenerator
                     return true;
                 }
                 return false;
-            }).ToList();
-        fields.ForEach(x => newClass = newClass.AddMembers(GenerateProperty(x, className, namespaces)));
-        
-        
+            }).ToList()
+            .ForEach(x => newClass = newClass.AddMembers(GenerateProperty(x, className, namespaces)));
         
         return newClass;
     }
 
-    // private FieldDeclarationSyntax GenerateField(FieldInfo info)
-    // {
-    //     var atribute = info.GetCustomAttribute(typeof(AutoDtoAttribute));
-    //     if(atribute == null || !(atribute is AutoDtoAttribute atr))
-    //         throw new ArgumentException("Argument null or missing AutoDtoAttribute");
-    //     
-    //     return SyntaxFactory.FieldDeclaration(
-    //             SyntaxFactory.VariableDeclaration(
-    //                 SyntaxFactory.IdentifierName(
-    //                     atr.TargetType != null? atr.TargetType!.Name : info.FieldType.Name
-    //                     )
-    //                 )
-    //                 .AddVariables(SyntaxFactory.VariableDeclarator(info.Name))
-    //             )
-    //             .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
-    //
-    // }
+    private ClassDeclarationSyntax GenerateConvertorClass(Type classType, List<MethodDeclarationSyntax> methods)
+    {
+        var staticConvertor = SyntaxFactory.ClassDeclaration(classType.Name + "Convertor")
+            .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword));
+        
+        methods.ForEach(x => staticConvertor = staticConvertor.AddMembers(x));
+        return staticConvertor;
+    }
+    
+    private MethodDeclarationSyntax GenerateConvertorMethod(Type classType, string className)
+    {
+        var method = SyntaxFactory.MethodDeclaration(
+                SyntaxFactory.ParseTypeName(className), // Return dto type
+                "To" + className // Method name
+            )
+            .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+            .AddModifiers(SyntaxFactory.Token(SyntaxKind.StaticKeyword))
+            .AddParameterListParameters(
+                SyntaxFactory.Parameter(SyntaxFactory.Identifier("model"))
+                    .WithType(SyntaxFactory.ParseTypeName(classType.Name))
+                    .AddModifiers(SyntaxFactory.Token(SyntaxKind.ThisKeyword)));
+        
+        List<StatementSyntax> statements = new();
+        
+        statements.Add(SyntaxFactory.LocalDeclarationStatement(
+            SyntaxFactory.VariableDeclaration(
+                SyntaxFactory.ParseTypeName(className))
+                .AddVariables(SyntaxFactory.VariableDeclarator("dto")
+                    .WithInitializer(SyntaxFactory.EqualsValueClause(
+                        SyntaxFactory.ObjectCreationExpression(
+                            SyntaxFactory.ParseTypeName(className)
+                        ).WithArgumentList(SyntaxFactory.ArgumentList()) // new Dto()
+                    )))));
+        
+        classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
+            .Where(info =>
+            {
+                var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+                foreach (var attribute in attributes)
+                {
+                    if(!(attribute is AutoDtoAttribute atr))
+                        continue;
+                    if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
+                        continue;
+                    return true;
+                }
+                return false;
+            }).ToList()
+            .ForEach(x => statements.Add(GenerateValueConversion(x, className)));
+        
+        statements.Add(SyntaxFactory.ReturnStatement(SyntaxFactory.IdentifierName("dto")));
+        
+        return method.WithBody(SyntaxFactory.Block(statements));
+    }
 
+    private ExpressionStatementSyntax GenerateValueConversion(MemberInfo info, string className)
+    {
+        AutoDtoAttribute? attribute = null;
+        
+        var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+        foreach (var potentionalAttribute in attributes)
+        {
+            if(!(potentionalAttribute is AutoDtoAttribute atrref))
+                continue;
+            if(atrref.Dtos.Length > 0 && !atrref.Dtos.Contains(className))
+                continue;
+            attribute = atrref;
+            break;
+        }
+        if(attribute == null)
+            throw new ArgumentException("Argument null or missing AutoDtoAttribute");
+        
+        var dtoProperty = SyntaxFactory.MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression,
+            SyntaxFactory.IdentifierName("dto"),
+            SyntaxFactory.IdentifierName(attribute.CustomName ?? info.Name));
+
+        
+        
+        ExpressionSyntax initialization = SyntaxFactory.MemberAccessExpression(
+                                            SyntaxKind.SimpleMemberAccessExpression,
+                                            SyntaxFactory.IdentifierName("model"),
+                                            SyntaxFactory.IdentifierName(info.Name)
+                                            );
+        if (attribute.Convertor != null)
+            initialization = SyntaxFactory.InvocationExpression(
+                    SyntaxFactory.IdentifierName( attribute.Convertor.Name + '.' + attribute.ToDtoMethod!) // we know that it exists;
+                ).WithArgumentList(
+                    SyntaxFactory.ArgumentList(
+                        SyntaxFactory.SingletonSeparatedList(
+                            SyntaxFactory.Argument(
+                                initialization
+                            )
+                        )
+                    )
+                );
+
+        return SyntaxFactory.ExpressionStatement(
+            SyntaxFactory.AssignmentExpression(
+                SyntaxKind.SimpleAssignmentExpression, dtoProperty, initialization));
+
+    }
+    
     private PropertyDeclarationSyntax GenerateProperty(MemberInfo info, string className, HashSet<string> namespaces)
     {
         AutoDtoAttribute? attribute = null;
@@ -136,7 +224,7 @@ public class ClassGenerator
 
         var property = SyntaxFactory.PropertyDeclaration(
                 propertyType,
-                SyntaxFactory.Identifier(info.Name))
+                SyntaxFactory.Identifier(attribute.CustomName ?? info.Name))
             .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
             .AddAccessorListAccessors(
                 // Adding the getter

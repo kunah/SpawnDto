@@ -1,6 +1,6 @@
 namespace AutoDto.Attributes;
 
-[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
 public class GenerateDtoAttribute : Attribute
 {
 
