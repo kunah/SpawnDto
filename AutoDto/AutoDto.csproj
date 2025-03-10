@@ -11,4 +11,8 @@
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.12.0" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Test\Convertor\" />
+    </ItemGroup>
+
 </Project>

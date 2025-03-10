@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using AutoDto.Attributes;
-using AutoDto.Test.Dto;
 
 namespace AutoDto.Test;
 
@@ -11,9 +10,9 @@ public static class BasicConvertor
         return field.GetHashCode();
     }
 
-    public static string ToField(int dto)
+    public static string ToField(int? dto)
     {
-        return dto.ToString();
+        return dto.ToString() ?? string.Empty;
     }
 }
 
@@ -22,7 +21,7 @@ public class BasicModel
 {
     [AutoDto(["FullBasic"], typeof(int), typeof(BasicConvertor), nameof(BasicConvertor.ToDto), nameof(BasicConvertor.ToField))]
     [AutoDto(["BasicModelDto"])]
-    public string Test { get; set; } = "test";
+    public string? Test { get; set; } = "test";
     
     [AutoDto(["BasicModelDto"])]
     public float Test2 = 1.1f;

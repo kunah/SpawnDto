@@ -6,7 +6,6 @@ namespace AutoDto.Attributes;
 /// <summary>
 ///
 /// </summary>
-/// <typeparam name="T">Generic type for specifying target data type</typeparam>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
 public class AutoDtoAttribute : Attribute
 {

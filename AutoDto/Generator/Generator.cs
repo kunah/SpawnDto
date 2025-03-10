@@ -7,10 +7,14 @@ namespace AutoDto.Generator;
 public class Generator
 {
     private readonly string? _assemblyPath;
+    private readonly string _outputPath;
+    private readonly string? _convertorOutputPath;
 
-    public Generator(string? assemblyPath)
+    public Generator(string? assemblyPath, string outputPath, string? convertorOutputPath)
     {
         _assemblyPath = assemblyPath;
+        _outputPath = outputPath;
+        _convertorOutputPath = convertorOutputPath;
     }
 
     public void Run()
@@ -27,7 +31,7 @@ public class Generator
         foreach (var cl in classes)
         {
             Console.WriteLine(cl.Name);
-            generator.GenerateClass(cl, "", "Test/Dto");
+            generator.GenerateClass(cl, "", _outputPath, _convertorOutputPath ?? _outputPath);
         }
     }
 

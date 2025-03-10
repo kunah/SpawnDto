@@ -9,41 +9,52 @@ namespace AutoDto.Generator;
 
 public class ClassGenerator
 {
-    public void GenerateClass(Type classType, string className, string outputPath)
+    public void GenerateClass(Type classType, string className, string outputPath, string convertorOutputPath)
     {
         
         if(!Path.Exists(outputPath))
             Directory.CreateDirectory(outputPath);
+        if(!Path.Exists(convertorOutputPath))
+            Directory.CreateDirectory(convertorOutputPath);
         var attribute = classType.GetCustomAttribute(typeof(GenerateDtoAttribute));
 
         if (attribute == null || !(attribute is GenerateDtoAttribute atr))
             throw new ArgumentNullException($"{classType.FullName} does not have a GenerateDtoAttribute");
         
         List<MethodDeclarationSyntax> methods = new ();
+        HashSet<string> convertorNamespaces = new HashSet<string>();
+        
+        if(classType.Namespace != null)
+            convertorNamespaces.Add(classType.Namespace);
         
         foreach (var name in atr.Names)
         {
             HashSet<string> namespaces = new HashSet<string>();
             
             var dto = GenerateDto(classType, name, namespaces);
-            methods.Add(GenerateConvertorMethod(classType, name));
-            var cu = GenerateTemplate(classType, dto, namespaces);
+            methods.Add(GenerateToDtoConvertorMethod(classType, name, convertorNamespaces));
+            methods.Add(GenerateFromDtoConvertorMethod(classType, name, convertorNamespaces));
+            var cu = GenerateTemplate(classType, dto, namespaces, ".Dto");
             SaveClass(cu, Path.Combine(outputPath,  name + ".cs"));
+            cu.Members.OfType<NamespaceDeclarationSyntax>()
+                .Select(ns => ns.Name.ToString())
+                .ToList().ForEach(ns => convertorNamespaces.Add(ns));
         }
         
         var convertor = GenerateConvertorClass(classType, methods);
-        var convertorCu = GenerateTemplate(classType, convertor, []);
-        SaveClass(convertorCu, Path.Combine(outputPath,  classType.Name + "Convertor.cs"));
+        var convertorCu = GenerateTemplate(classType, convertor, convertorNamespaces,
+            convertorOutputPath == outputPath ? ".Dto" : ".Convertor");
+        SaveClass(convertorCu, Path.Combine(convertorOutputPath,  classType.Name + "Convertor.cs"));
 
 
     }
 
-    private CompilationUnitSyntax GenerateTemplate(Type classType, ClassDeclarationSyntax classDeclarationSyntax, HashSet<string> namespaces)
+    private CompilationUnitSyntax GenerateTemplate(Type classType, ClassDeclarationSyntax classDeclarationSyntax, HashSet<string> namespaces, string namespaceStr)
     {
 
         var cu = SyntaxFactory.CompilationUnit()
             .AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName((classType.Namespace ??
-                classType.Name) + ".Dto"))
+                classType.Name) + namespaceStr))
                 .AddMembers(classDeclarationSyntax)
             );
         
@@ -90,7 +101,7 @@ public class ClassGenerator
         return staticConvertor;
     }
     
-    private MethodDeclarationSyntax GenerateConvertorMethod(Type classType, string className)
+    private MethodDeclarationSyntax GenerateToDtoConvertorMethod(Type classType, string className, HashSet<string> namespaces)
     {
         var method = SyntaxFactory.MethodDeclaration(
                 SyntaxFactory.ParseTypeName(className), // Return dto type
@@ -129,14 +140,60 @@ public class ClassGenerator
                 }
                 return false;
             }).ToList()
-            .ForEach(x => statements.Add(GenerateValueConversion(x, className)));
+            .ForEach(x => statements.Add(GenerateValueConversion(x, className, namespaces)));
         
         statements.Add(SyntaxFactory.ReturnStatement(SyntaxFactory.IdentifierName("dto")));
         
         return method.WithBody(SyntaxFactory.Block(statements));
     }
 
-    private ExpressionStatementSyntax GenerateValueConversion(MemberInfo info, string className)
+    private MethodDeclarationSyntax GenerateFromDtoConvertorMethod(Type classType, string className, HashSet<string> namespaces)
+    {
+                var method = SyntaxFactory.MethodDeclaration(
+                SyntaxFactory.ParseTypeName(classType.Name), // Return dto type
+                "ToModel" // Method name
+            )
+            .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword))
+            .AddModifiers(SyntaxFactory.Token(SyntaxKind.StaticKeyword))
+            .AddParameterListParameters(
+                SyntaxFactory.Parameter(SyntaxFactory.Identifier("dto"))
+                    .WithType(SyntaxFactory.ParseTypeName(className))
+                    .AddModifiers(SyntaxFactory.Token(SyntaxKind.ThisKeyword)));
+        
+        List<StatementSyntax> statements = new();
+        
+        statements.Add(SyntaxFactory.LocalDeclarationStatement(
+            SyntaxFactory.VariableDeclaration(
+                SyntaxFactory.ParseTypeName(classType.Name))
+                .AddVariables(SyntaxFactory.VariableDeclarator("model")
+                    .WithInitializer(SyntaxFactory.EqualsValueClause(
+                        SyntaxFactory.ObjectCreationExpression(
+                            SyntaxFactory.ParseTypeName(classType.Name)
+                        ).WithArgumentList(SyntaxFactory.ArgumentList()) // new Dto()
+                    )))));
+        
+        classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
+            .Where(info =>
+            {
+                var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+                foreach (var attribute in attributes)
+                {
+                    if(!(attribute is AutoDtoAttribute atr))
+                        continue;
+                    if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
+                        continue;
+                    return true;
+                }
+                return false;
+            }).ToList()
+            .ForEach(x => statements.Add(GenerateValueConversion(x, className, namespaces, false)));
+        
+        statements.Add(SyntaxFactory.ReturnStatement(SyntaxFactory.IdentifierName("model")));
+        
+        return method.WithBody(SyntaxFactory.Block(statements));
+    }
+    
+    private ExpressionStatementSyntax GenerateValueConversion(MemberInfo info, string className, HashSet<string> namespaces, bool toDto = true)
     {
         AutoDtoAttribute? attribute = null;
         
@@ -153,35 +210,52 @@ public class ClassGenerator
         if(attribute == null)
             throw new ArgumentException("Argument null or missing AutoDtoAttribute");
         
-        var dtoProperty = SyntaxFactory.MemberAccessExpression(
+        ExpressionSyntax dtoProperty = SyntaxFactory.MemberAccessExpression(
             SyntaxKind.SimpleMemberAccessExpression,
             SyntaxFactory.IdentifierName("dto"),
             SyntaxFactory.IdentifierName(attribute.CustomName ?? info.Name));
 
         
         
-        ExpressionSyntax initialization = SyntaxFactory.MemberAccessExpression(
+        ExpressionSyntax model = SyntaxFactory.MemberAccessExpression(
                                             SyntaxKind.SimpleMemberAccessExpression,
                                             SyntaxFactory.IdentifierName("model"),
                                             SyntaxFactory.IdentifierName(info.Name)
                                             );
-        if (attribute.Convertor != null)
-            initialization = SyntaxFactory.InvocationExpression(
+        if (attribute.Convertor != null && attribute.Convertor.Namespace != null)
+            namespaces.Add(attribute.Convertor.Namespace);
+        if (attribute.Convertor != null && toDto)
+            model = SyntaxFactory.InvocationExpression(
                     SyntaxFactory.IdentifierName( attribute.Convertor.Name + '.' + attribute.ToDtoMethod!) // we know that it exists;
                 ).WithArgumentList(
                     SyntaxFactory.ArgumentList(
                         SyntaxFactory.SingletonSeparatedList(
                             SyntaxFactory.Argument(
-                                initialization
+                                model
                             )
                         )
                     )
                 );
+        else if(attribute.Convertor != null && !toDto)
+            dtoProperty = SyntaxFactory.InvocationExpression(
+                SyntaxFactory.IdentifierName( attribute.Convertor.Name + '.' + attribute.FromDtoMethod!) // we know that it exists;
+            ).WithArgumentList(
+                SyntaxFactory.ArgumentList(
+                    SyntaxFactory.SingletonSeparatedList(
+                        SyntaxFactory.Argument(
+                            dtoProperty
+                        )
+                    )
+                )
+            );
 
+        if(toDto)
+            return SyntaxFactory.ExpressionStatement(
+            SyntaxFactory.AssignmentExpression(
+                SyntaxKind.SimpleAssignmentExpression, dtoProperty, model));
         return SyntaxFactory.ExpressionStatement(
             SyntaxFactory.AssignmentExpression(
-                SyntaxKind.SimpleAssignmentExpression, dtoProperty, initialization));
-
+                SyntaxKind.SimpleAssignmentExpression, model, dtoProperty));
     }
     
     private PropertyDeclarationSyntax GenerateProperty(MemberInfo info, string className, HashSet<string> namespaces)
