@@ -7,10 +7,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\AutoDto\AutoDto.csproj" />
+      <ProjectReference Include="..\DtoSpawn\DtoSpawn.csproj" />
     </ItemGroup>
-
-    <Target Name="Generate DTOs" AfterTargets="PostBuildEvent">
-        <Exec Command="dotnet my-dtoGenerator -a $(OutDir)$(TargetName).dll --dto $(ProjectDir)../DTOs/Dto -n DTOs.Dto --convertorOutputPath $(ProjectDir)../Convertors/Convertor --convertorNamespace Convertors.Convertor" ContinueOnError="false" />
-    </Target>
+<!--EXAMPLE CODE BUILD RUN-->
+<!--    <Target Name="Generate DTOs" AfterTargets="PostBuildEvent">-->
+<!--        <Exec Command="dotnet my-dtoGenerator -a $(OutDir)$(TargetName).dll &#45;&#45;dto $(ProjectDir)../DTOs/Dto -n DTOs.Dto &#45;&#45;convertorOutputPath $(ProjectDir)../Convertors/Convertor &#45;&#45;convertorNamespace Convertors.Convertor" ContinueOnError="false" />-->
+<!--    </Target>-->
 </Project>
