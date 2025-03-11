@@ -1,11 +1,11 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using AutoDto.Attributes;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using SpawnDto.Attributes;
 
-namespace AutoDto.Generator;
+namespace SpawnDto.Generator;
 
 public class ClassGenerator
 {
@@ -75,10 +75,10 @@ public class ClassGenerator
         classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>
             {
-                var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+                var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
                 foreach (var attribute in attributes)
                 {
-                    if(!(attribute is AutoDtoAttribute atr))
+                    if(!(attribute is SpawnDtoAttribute atr))
                         continue;
                     if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
                         continue;
@@ -128,10 +128,10 @@ public class ClassGenerator
         classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>
             {
-                var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+                var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
                 foreach (var attribute in attributes)
                 {
-                    if(!(attribute is AutoDtoAttribute atr))
+                    if(!(attribute is SpawnDtoAttribute atr))
                         continue;
                     if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
                         continue;
@@ -174,10 +174,10 @@ public class ClassGenerator
         classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>
             {
-                var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+                var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
                 foreach (var attribute in attributes)
                 {
-                    if(!(attribute is AutoDtoAttribute atr))
+                    if(!(attribute is SpawnDtoAttribute atr))
                         continue;
                     if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
                         continue;
@@ -194,12 +194,12 @@ public class ClassGenerator
     
     private ExpressionStatementSyntax GenerateValueConversion(MemberInfo info, string className, HashSet<string> namespaces, bool toDto = true)
     {
-        AutoDtoAttribute? attribute = null;
+        SpawnDtoAttribute? attribute = null;
         
-        var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+        var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
         foreach (var potentionalAttribute in attributes)
         {
-            if(!(potentionalAttribute is AutoDtoAttribute atrref))
+            if(!(potentionalAttribute is SpawnDtoAttribute atrref))
                 continue;
             if(atrref.Dtos.Length > 0 && !atrref.Dtos.Contains(className))
                 continue;
@@ -207,7 +207,7 @@ public class ClassGenerator
             break;
         }
         if(attribute == null)
-            throw new ArgumentException("Argument null or missing AutoDtoAttribute");
+            throw new ArgumentException("Argument null or missing SpawnDtoAttribute");
         
         ExpressionSyntax dtoProperty = SyntaxFactory.MemberAccessExpression(
             SyntaxKind.SimpleMemberAccessExpression,
@@ -259,12 +259,12 @@ public class ClassGenerator
     
     private PropertyDeclarationSyntax GenerateProperty(MemberInfo info, string className, HashSet<string> namespaces)
     {
-        AutoDtoAttribute? attribute = null;
+        SpawnDtoAttribute? attribute = null;
         
-        var attributes = info.GetCustomAttributes(typeof(AutoDtoAttribute));
+        var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
         foreach (var potentionalAttribute in attributes)
         {
-            if(!(potentionalAttribute is AutoDtoAttribute atrref))
+            if(!(potentionalAttribute is SpawnDtoAttribute atrref))
                 continue;
             if(atrref.Dtos.Length > 0 && !atrref.Dtos.Contains(className))
                 continue;
@@ -272,7 +272,7 @@ public class ClassGenerator
             break;
         }
         if(attribute == null)
-            throw new ArgumentException("Argument null or missing AutoDtoAttribute");
+            throw new ArgumentException("Argument null or missing SpawnDtoAttribute");
         
         TypeSyntax propertyType;
 
@@ -353,7 +353,7 @@ public class ClassGenerator
         throw new ArgumentException("Invalid member info");
     }
     
-    private object? GetMemberValue(MemberInfo memberInfo, AutoDtoAttribute atr)
+    private object? GetMemberValue(MemberInfo memberInfo, SpawnDtoAttribute atr)
     {
         object? value = null;
         if(memberInfo.ReflectedType == null)
@@ -370,7 +370,7 @@ public class ClassGenerator
         {
             var toDtoMethod = atr.Convertor.GetMethod(atr.ToDtoMethod!);
 
-            // we know that the method exists thanks to AutoDtoAttribute constructor
+            // we know that the method exists thanks to SpawnDtoAttribute constructor
             return toDtoMethod!.Invoke(null, [value]);
         }
         

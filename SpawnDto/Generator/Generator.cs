@@ -1,8 +1,8 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using AutoDto.Attributes;
+using SpawnDto.Attributes;
 
-namespace AutoDto.Generator;
+namespace SpawnDto.Generator;
 
 public class Generator
 {

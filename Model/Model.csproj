@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\DtoSpawn\DtoSpawn.csproj" />
+      <ProjectReference Include="..\SpawnDto\SpawnDto.csproj" />
     </ItemGroup>
 <!--EXAMPLE CODE BUILD RUN-->
 <!--    <Target Name="Generate DTOs" AfterTargets="PostBuildEvent">-->

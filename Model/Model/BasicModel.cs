@@ -1,4 +1,4 @@
-using AutoDto.Attributes;
+using SpawnDto.Attributes;
 
 namespace Model.Model;
 
@@ -18,13 +18,13 @@ public static class BasicConvertor
 [GenerateDto("BasicModelDto", "FullBasic")]
 public class BasicModel
 {
-    [AutoDto(["FullBasic"], typeof(int), typeof(BasicConvertor), nameof(BasicConvertor.ToDto), nameof(BasicConvertor.ToField))]
-    [AutoDto(["BasicModelDto"])]
+    [SpawnDto(["FullBasic"], typeof(int), typeof(BasicConvertor), nameof(BasicConvertor.ToDto), nameof(BasicConvertor.ToField))]
+    [SpawnDto(["BasicModelDto"])]
     public string? Test { get; set; } = "test";
     
-    [AutoDto(["BasicModelDto"])]
+    [SpawnDto(["BasicModelDto"])]
     public float Test2 = 1.1f;
 
-    [AutoDto("DtoName")] 
+    [SpawnDto("DtoName")] 
     public string? Name = string.Empty;
 }

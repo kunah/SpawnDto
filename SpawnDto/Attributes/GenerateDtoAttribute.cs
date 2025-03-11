@@ -1,4 +1,4 @@
-namespace AutoDto.Attributes;
+namespace SpawnDto.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = false)]
 public class GenerateDtoAttribute : Attribute

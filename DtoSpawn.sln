@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DtoSpawn", "DtoSpawn\DtoSpawn.csproj", "{98DFA0A0-3F6B-4995-A4F9-DBA98F8548DB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpawnDto", "SpawnDto\SpawnDto.csproj", "{98DFA0A0-3F6B-4995-A4F9-DBA98F8548DB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTOs", "DTOs\DTOs.csproj", "{EC3886B5-1A0B-43C3-8444-471411501982}"
 EndProject

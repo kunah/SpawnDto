@@ -1,6 +1,6 @@
 using CommandLine;
 
-namespace AutoDto;
+namespace SpawnDto;
 
 public class Program
 {

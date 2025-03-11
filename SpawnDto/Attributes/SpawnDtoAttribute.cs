@@ -1,13 +1,13 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace AutoDto.Attributes;
+namespace SpawnDto.Attributes;
 
 /// <summary>
 ///
 /// </summary>
 [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true)]
-public class AutoDtoAttribute : Attribute
+public class SpawnDtoAttribute : Attribute
 {
 
     private readonly string? _customName; // name of the property in the dto
@@ -25,23 +25,23 @@ public class AutoDtoAttribute : Attribute
     public string? ToDtoMethod => _toDtoMethod;
     public string? FromDtoMethod => _fromDtoMethod;
 
-    public AutoDtoAttribute() : this(null, []) {}
+    public SpawnDtoAttribute() : this(null, []) {}
 
-    public AutoDtoAttribute(string customName) : this(customName, []) {}
+    public SpawnDtoAttribute(string customName) : this(customName, []) {}
 
-    public AutoDtoAttribute(string[] dtos) : this(null, dtos) {}
+    public SpawnDtoAttribute(string[] dtos) : this(null, dtos) {}
 
-    public AutoDtoAttribute(string? customName, string[] dtoNames) : this(customName, dtoNames, null) {}
+    public SpawnDtoAttribute(string? customName, string[] dtoNames) : this(customName, dtoNames, null) {}
 
-    public AutoDtoAttribute(string? customName, Type? targetType = null, Type? convertor = null,
+    public SpawnDtoAttribute(string? customName, Type? targetType = null, Type? convertor = null,
         string? toDtoMethod = null, string? fromDtoMethod = null)
         : this(customName, [], targetType, convertor, toDtoMethod, fromDtoMethod) {}
     
-    public AutoDtoAttribute(string[] dtoNames, Type? targetType = null,
+    public SpawnDtoAttribute(string[] dtoNames, Type? targetType = null,
         Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null)
         : this(null, dtoNames, targetType, convertor, toDtoMethod, fromDtoMethod) { }
     
-    public AutoDtoAttribute(string? customName, string[] dtoNames, Type? targetType = null,
+    public SpawnDtoAttribute(string? customName, string[] dtoNames, Type? targetType = null,
         Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null)
     {
         if (targetType != null && convertor == null)

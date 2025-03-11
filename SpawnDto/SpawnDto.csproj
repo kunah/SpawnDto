@@ -4,14 +4,13 @@
         <OutputType>Exe</OutputType>
         <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>dtoSpawn</ToolCommandName>
+        <ToolCommandName>DtoSpawn</ToolCommandName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>AutoDto</RootNamespace>
     </PropertyGroup>
     
     <PropertyGroup>
-        <PackageId>dtoSpawn</PackageId>
+        <PackageId>SpawnDto</PackageId>
         <Version>0.0.1</Version>
     </PropertyGroup>
 
