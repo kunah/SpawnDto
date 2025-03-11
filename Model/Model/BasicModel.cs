@@ -1,7 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 using AutoDto.Attributes;
 
-namespace AutoDto.Model;
+namespace Model.Model;
 
 public static class BasicConvertor
 {

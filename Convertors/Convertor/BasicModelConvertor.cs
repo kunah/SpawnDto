@@ -1,7 +1,7 @@
 using DTOs.Dto;
-using AutoDto.Model;
+using Model.Model;
 
-namespace DTOs.Convertor
+namespace Convertors.Convertor
 {
     public static class BasicModelConvertor
     {
