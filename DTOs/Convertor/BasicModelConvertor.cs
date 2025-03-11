@@ -1,7 +1,7 @@
-using AutoDto.Test;
-using AutoDto.Test.Dto;
+using DTOs.Dto;
+using AutoDto.Model;
 
-namespace AutoDto.Test.Convertor
+namespace DTOs.Convertor
 {
     public static class BasicModelConvertor
     {
@@ -9,7 +9,6 @@ namespace AutoDto.Test.Convertor
         {
             BasicModelDto dto = new BasicModelDto();
             dto.Test = model.Test;
-            dto.AnotherModel = model.AnotherModel;
             dto.Test2 = model.Test2;
             dto.DtoName = model.Name;
             return dto;
@@ -19,7 +18,6 @@ namespace AutoDto.Test.Convertor
         {
             BasicModel model = new BasicModel();
             model.Test = dto.Test;
-            model.AnotherModel = dto.AnotherModel;
             model.Test2 = dto.Test2;
             model.Name = dto.DtoName;
             return model;
@@ -29,7 +27,6 @@ namespace AutoDto.Test.Convertor
         {
             FullBasic dto = new FullBasic();
             dto.Test = BasicConvertor.ToDto(model.Test);
-            dto.AnotherModel = model.AnotherModel;
             dto.DtoName = model.Name;
             return dto;
         }
@@ -38,7 +35,6 @@ namespace AutoDto.Test.Convertor
         {
             BasicModel model = new BasicModel();
             model.Test = BasicConvertor.ToField(dto.Test);
-            model.AnotherModel = dto.AnotherModel;
             model.Name = dto.DtoName;
             return model;
         }

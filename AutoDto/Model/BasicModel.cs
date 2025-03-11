@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using AutoDto.Attributes;
 
-namespace AutoDto.Test;
+namespace AutoDto.Model;
 
 public static class BasicConvertor
 {
@@ -28,7 +28,4 @@ public class BasicModel
 
     [AutoDto("DtoName")] 
     public string? Name = string.Empty;
-    
-    [AutoDto, Required]
-    public AutoDtoAttribute? AnotherModel { get; set; }
 }

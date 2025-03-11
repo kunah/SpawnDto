@@ -9,7 +9,7 @@ namespace AutoDto.Generator;
 
 public class ClassGenerator
 {
-    public void GenerateClass(Type classType, string className, string outputPath, string convertorOutputPath)
+    public void GenerateClass(Type classType, string className, string outputPath, string dtoNamespace, string convertorOutputPath, string convertorNamespace)
     {
         
         if(!Path.Exists(outputPath))
@@ -34,7 +34,7 @@ public class ClassGenerator
             var dto = GenerateDto(classType, name, namespaces);
             methods.Add(GenerateToDtoConvertorMethod(classType, name, convertorNamespaces));
             methods.Add(GenerateFromDtoConvertorMethod(classType, name, convertorNamespaces));
-            var cu = GenerateTemplate(classType, dto, namespaces, ".Dto");
+            var cu = GenerateTemplate(classType, dto, namespaces, dtoNamespace);
             SaveClass(cu, Path.Combine(outputPath,  name + ".cs"));
             cu.Members.OfType<NamespaceDeclarationSyntax>()
                 .Select(ns => ns.Name.ToString())
@@ -43,7 +43,7 @@ public class ClassGenerator
         
         var convertor = GenerateConvertorClass(classType, methods);
         var convertorCu = GenerateTemplate(classType, convertor, convertorNamespaces,
-            convertorOutputPath == outputPath ? ".Dto" : ".Convertor");
+            convertorNamespace);
         SaveClass(convertorCu, Path.Combine(convertorOutputPath,  classType.Name + "Convertor.cs"));
 
 
@@ -53,8 +53,7 @@ public class ClassGenerator
     {
 
         var cu = SyntaxFactory.CompilationUnit()
-            .AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName((classType.Namespace ??
-                classType.Name) + namespaceStr))
+            .AddMembers(SyntaxFactory.NamespaceDeclaration(SyntaxFactory.ParseName(namespaceStr))
                 .AddMembers(classDeclarationSyntax)
             );
         

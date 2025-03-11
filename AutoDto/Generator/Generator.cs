@@ -8,13 +8,17 @@ public class Generator
 {
     private readonly string? _assemblyPath;
     private readonly string _outputPath;
+    private readonly string _dtoNamespace;
     private readonly string? _convertorOutputPath;
+    private readonly string? _convertorNamespace;
 
-    public Generator(string? assemblyPath, string outputPath, string? convertorOutputPath)
+    public Generator(string? assemblyPath, string outputPath, string dtoNamespace, string? convertorOutputPath, string? convertorNamespace = null)
     {
         _assemblyPath = assemblyPath;
         _outputPath = outputPath;
+        _dtoNamespace = dtoNamespace;
         _convertorOutputPath = convertorOutputPath;
+        _convertorNamespace = convertorNamespace;
     }
 
     public void Run()
@@ -31,7 +35,7 @@ public class Generator
         foreach (var cl in classes)
         {
             Console.WriteLine(cl.Name);
-            generator.GenerateClass(cl, "", _outputPath, _convertorOutputPath ?? _outputPath);
+            generator.GenerateClass(cl, "", _outputPath, _dtoNamespace, _convertorOutputPath ?? _outputPath, _convertorNamespace ?? _dtoNamespace);
         }
     }
 

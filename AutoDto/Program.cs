@@ -13,14 +13,14 @@ public class Program
         //     return;
         // }
 
-        if (args.Length < 2)
+        if (args.Length < 3)
         {
             Console.WriteLine(
-                "Usage: dotnet AutoDto.dll [assemblyPath] [Dto-outputPath] (optional)[convertorOutputPath]");
+                "Usage: dotnet AutoDto.dll [assemblyPath] [DTO-outputPath] [DTO-namespace] (optional)[convertorOutputPath] (optional)[convertor-namespace]");
             return;
         }
 
-        var generator = new Generator.Generator(args[0], args[1], args.Length > 2 ? args[2] : null);
+        var generator = new Generator.Generator(args[0], args[1], args[2],args.Length > 3 ? args[3] : null, args.Length > 4 ? args[4] : args[2]);
         
         generator.Run();
         
