@@ -1,4 +1,5 @@
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 
 namespace SpawnDto.Core.Attributes;
@@ -25,6 +26,9 @@ public class SpawnDtoAttribute : Attribute
     public string? ToDtoMethod => _toDtoMethod;
     public string? FromDtoMethod => _fromDtoMethod;
 
+    private readonly bool _willBeGenerated;
+    public bool WillBeGenerated => _willBeGenerated;
+
     public SpawnDtoAttribute() : this(null, []) {}
 
     public SpawnDtoAttribute(string customName) : this(customName, []) {}
@@ -32,21 +36,42 @@ public class SpawnDtoAttribute : Attribute
     public SpawnDtoAttribute(string[] dtos) : this(null, dtos) {}
 
     public SpawnDtoAttribute(string? customName, string[] dtoNames) : this(customName, dtoNames, null) {}
+    
+    public SpawnDtoAttribute(Type? convertor, string? toDtoMethod, string? fromDtoMethod)
+        : this(targetType: null, convertor, toDtoMethod, fromDtoMethod) {}
 
+    public SpawnDtoAttribute(string? targetTypeString, bool willBeGenerated) : this(targetTypeString, null, null, null, willBeGenerated) {}
+    
+    public SpawnDtoAttribute(string? targetTypeString, Type? convertor, string? toDtoMethod, string? fromDtoMethod, bool willBeGenerated = false)
+        : this(null, [], CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
+    
+    public SpawnDtoAttribute(Type? targetType, Type? convertor, string? toDtoMethod, string? fromDtoMethod, bool willBeGenerated = false)
+        : this(null, [], targetType, convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
+
+    public SpawnDtoAttribute(string? customName, string? targetTypeString = null, Type? convertor = null,
+        string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
+        : this(customName, [], CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
+        
     public SpawnDtoAttribute(string? customName, Type? targetType = null, Type? convertor = null,
-        string? toDtoMethod = null, string? fromDtoMethod = null)
-        : this(customName, [], targetType, convertor, toDtoMethod, fromDtoMethod) {}
+        string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
+        : this(customName, [], targetType, convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
+    
+    public SpawnDtoAttribute(string[] dtoNames, string? targetTypeString = null,
+        Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
+        : this(null, dtoNames, CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) { }
     
     public SpawnDtoAttribute(string[] dtoNames, Type? targetType = null,
-        Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null)
-        : this(null, dtoNames, targetType, convertor, toDtoMethod, fromDtoMethod) { }
+        Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
+        : this(null, dtoNames, targetType, convertor, toDtoMethod, fromDtoMethod, willBeGenerated) { }
+
     
     public SpawnDtoAttribute(string? customName, string[] dtoNames, Type? targetType = null,
-        Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null)
+        Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
     {
-        if (targetType != null && convertor == null)
+        if (targetType != null && convertor == null && !willBeGenerated)
             throw new ArgumentNullException(nameof(convertor),"Convertor can't be null when targetType is used!");
-        if (convertor != null)
+        
+        if (convertor != null && !willBeGenerated)
         {
             if (toDtoMethod == null)
                 throw new ArgumentNullException(nameof(toDtoMethod), "Method name can't be null when convertor is used!");    
@@ -61,7 +86,6 @@ public class SpawnDtoAttribute : Attribute
             if(targetType != null && methodToDto.ReturnType != targetType &&
                methodFromDto.GetParameters().Length != 1 && methodFromDto.GetParameters()[0].ParameterType != targetType)
                 throw new ArgumentNullException(nameof(targetType),"Method has to have the same return type!");
-            
             _toDtoMethod = toDtoMethod;
             _fromDtoMethod = fromDtoMethod;
         }
@@ -82,6 +106,20 @@ public class SpawnDtoAttribute : Attribute
         _dtos = dtoNames;
         _targetType = targetType;
         _convertor = convertor;
+        _willBeGenerated = willBeGenerated;
     }
+
+    private static Type? CreateType(string? name)
+    {
+        if(name == null)
+            return null;
         
+        AssemblyName assemblyName = new AssemblyName("DynamicAssembly");
+        AssemblyBuilder assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
+        ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule("DynamicModule");
+        
+        var typeBuilder = moduleBuilder.DefineType(name, TypeAttributes.Class | TypeAttributes.Public);
+        return typeBuilder.CreateType();
+    }
+    
 }

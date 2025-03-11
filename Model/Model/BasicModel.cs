@@ -30,6 +30,9 @@ public class BasicModel
     
     [SpawnDto]
     public string Always = string.Empty;
+
+    [SpawnDto("SecondDto", true )]
+    public SecondModel model;
     
     public string Never = string.Empty;
 }

@@ -8,5 +8,6 @@ namespace DTOs.Dto
         public Single Test2 { get; set; } = 1.1F;
         public String DtoName { get; set; } = "";
         public String? Always { get; set; } = "";
+        public SecondDto? model { get; set; }
     }
 }

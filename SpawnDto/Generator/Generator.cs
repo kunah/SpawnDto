@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using SpawnDto.Core.Attributes;
 
-namespace SpawnDto.Core.Generator;
+namespace SpawnDto.Generator;
 
 public class Generator
 {

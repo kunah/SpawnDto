@@ -25,7 +25,7 @@ public class Program
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
             {
-                var generator = new Core.Generator.Generator(o.AssemblyPath, o.DtoOutputPath, o.DtoNamespace,
+                var generator = new Generator.Generator(o.AssemblyPath, o.DtoOutputPath, o.DtoNamespace,
                     o.ConvertorOutputPath ?? o.DtoOutputPath, o.ConvertorNamespace ?? o.DtoNamespace);
                 generator.Run();
             });

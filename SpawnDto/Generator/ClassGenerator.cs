@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using SpawnDto.Core.Attributes;
 
-namespace SpawnDto.Core.Generator;
+namespace SpawnDto.Generator;
 
 public class ClassGenerator
 {
@@ -224,6 +224,7 @@ public class ClassGenerator
         if (attribute.Convertor != null && attribute.Convertor.Namespace != null)
             namespaces.Add(attribute.Convertor.Namespace);
         if (attribute.Convertor != null && toDto)
+        {
             model = SyntaxFactory.InvocationExpression(
                     SyntaxFactory.IdentifierName( attribute.Convertor.Name + '.' + attribute.ToDtoMethod!) // we know that it exists;
                 ).WithArgumentList(
@@ -235,7 +236,18 @@ public class ClassGenerator
                         )
                     )
                 );
-        else if(attribute.Convertor != null && !toDto)
+        }
+        else if (attribute.Convertor == null && toDto && attribute.WillBeGenerated)
+        {
+            model = SyntaxFactory.InvocationExpression(
+                SyntaxFactory.MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    SyntaxFactory.IdentifierName("model." + info.Name),
+                    SyntaxFactory.IdentifierName("To" + attribute.TargetType!.Name)
+                ));
+        }
+        if (attribute.Convertor != null && !toDto)
+        {
             dtoProperty = SyntaxFactory.InvocationExpression(
                 SyntaxFactory.IdentifierName( attribute.Convertor.Name + '.' + attribute.FromDtoMethod!) // we know that it exists;
             ).WithArgumentList(
@@ -247,6 +259,16 @@ public class ClassGenerator
                     )
                 )
             );
+        }
+        else if (attribute.Convertor == null && !toDto && attribute.WillBeGenerated)
+        {
+            dtoProperty = SyntaxFactory.InvocationExpression(
+                SyntaxFactory.MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    SyntaxFactory.IdentifierName("dto." + info.Name),
+                    SyntaxFactory.IdentifierName("ToModel")
+                ));
+        }
 
         if(toDto)
             return SyntaxFactory.ExpressionStatement(
@@ -341,7 +363,7 @@ public class ClassGenerator
             return SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal((float)value));
         
         // Fallback: Use "default(Type)"
-        return SyntaxFactory.DefaultExpression(SyntaxFactory.ParseTypeName(type.FullName ?? type.Name));
+        return SyntaxFactory.DefaultExpression(SyntaxFactory.ParseTypeName(type.Name));
     }
     
     private Type GetMemberType(MemberInfo memberInfo)
