@@ -7,8 +7,6 @@ public class Program
 
     public class Options
     {
-        [Option('v', "verbose", Required = false, HelpText = "Set output to verbose messages.")]
-        public bool Verbose { get; set; }
         [Option('a', "assemblyPath", Required = true, HelpText = "Set the assembly path.")]
         public string AssemblyPath { get; set; }
         [Option('d', "dto", Required = true, HelpText = "Where to output the DTOs.")]

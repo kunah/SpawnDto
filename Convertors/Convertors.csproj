@@ -11,4 +11,8 @@
       <ProjectReference Include="..\Model\Model.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Convertor\" />
+    </ItemGroup>
+
 </Project>

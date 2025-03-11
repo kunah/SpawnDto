@@ -3,8 +3,14 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net8.0</TargetFramework>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>my-dtoGenerator</ToolCommandName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+    </PropertyGroup>
+    
+    <PropertyGroup>
+        <PackageId>my-dtoGenerator</PackageId>
     </PropertyGroup>
 
     <ItemGroup>

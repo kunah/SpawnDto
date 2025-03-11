@@ -9,4 +9,8 @@
     <ItemGroup>
       <ProjectReference Include="..\AutoDto\AutoDto.csproj" />
     </ItemGroup>
+
+    <Target Name="Generate DTOs" AfterTargets="PostBuildEvent">
+        <Exec Command="dotnet my-dtoGenerator -a $(OutDir)$(TargetName).dll --dto $(ProjectDir)../DTOs/Dto -n DTOs.Dto --convertorOutputPath $(ProjectDir)../Convertors/Convertor --convertorNamespace Convertors.Convertor" ContinueOnError="false" />
+    </Target>
 </Project>
