@@ -1,2 +1,2 @@
-# AutoDto
-.NET tool for automatic generation of Dtos
+# SpawnDto
+.NET tool for automatic generation of DTOs
