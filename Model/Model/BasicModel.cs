@@ -27,4 +27,9 @@ public class BasicModel
 
     [SpawnDto("DtoName")] 
     public string? Name = string.Empty;
+    
+    [SpawnDto]
+    public string Always = string.Empty;
+    
+    public string Never = string.Empty;
 }

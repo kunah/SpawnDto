@@ -11,6 +11,7 @@ namespace Convertors.Convertor
             dto.Test = model.Test;
             dto.Test2 = model.Test2;
             dto.DtoName = model.Name;
+            dto.Always = model.Always;
             return dto;
         }
 
@@ -20,6 +21,7 @@ namespace Convertors.Convertor
             model.Test = dto.Test;
             model.Test2 = dto.Test2;
             model.Name = dto.DtoName;
+            model.Always = dto.Always;
             return model;
         }
 
@@ -28,6 +30,7 @@ namespace Convertors.Convertor
             FullBasic dto = new FullBasic();
             dto.Test = BasicConvertor.ToDto(model.Test);
             dto.DtoName = model.Name;
+            dto.Always = model.Always;
             return dto;
         }
 
@@ -36,6 +39,7 @@ namespace Convertors.Convertor
             BasicModel model = new BasicModel();
             model.Test = BasicConvertor.ToField(dto.Test);
             model.Name = dto.DtoName;
+            model.Always = dto.Always;
             return model;
         }
     }
