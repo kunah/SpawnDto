@@ -3,9 +3,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using SpawnDto.Attributes;
+using SpawnDto.Core.Attributes;
 
-namespace SpawnDto.Generator;
+namespace SpawnDto.Core.Generator;
 
 public class ClassGenerator
 {

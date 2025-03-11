@@ -1,3 +1,4 @@
+using System;
 using CommandLine;
 
 namespace SpawnDto;
@@ -5,7 +6,7 @@ namespace SpawnDto;
 public class Program
 {
 
-    public class Options
+    private class Options
     {
         [Option('a', "assemblyPath", Required = true, HelpText = "Set the assembly path.")]
         public string AssemblyPath { get; set; }
@@ -19,12 +20,12 @@ public class Program
         public string? ConvertorNamespace { get; set; }
     }
     
-    public static void Main(string[] args)
+    private static void Main(string[] args)
     {
         Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o =>
             {
-                var generator = new Generator.Generator(o.AssemblyPath, o.DtoOutputPath, o.DtoNamespace,
+                var generator = new Core.Generator.Generator(o.AssemblyPath, o.DtoOutputPath, o.DtoNamespace,
                     o.ConvertorOutputPath ?? o.DtoOutputPath, o.ConvertorNamespace ?? o.DtoNamespace);
                 generator.Run();
             });

@@ -1,4 +1,4 @@
-using SpawnDto.Attributes;
+using SpawnDto.Core.Attributes;
 
 namespace Model.Model;
 

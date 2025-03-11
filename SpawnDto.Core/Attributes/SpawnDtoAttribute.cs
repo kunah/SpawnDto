@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace SpawnDto.Attributes;
+namespace SpawnDto.Core.Attributes;
 
 /// <summary>
 ///

@@ -1,28 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <OutputType>Exe</OutputType>
         <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
-        <PackAsTool>true</PackAsTool>
-        <ToolCommandName>SpawnDto</ToolCommandName>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
-    
+
     <PropertyGroup>
         <PackageOutputPath>../nupkg</PackageOutputPath>
-        <PackageId>SpawnDto</PackageId>
+        <PackageId>SpawnDto.Core</PackageId>
         <Version>0.0.2</Version>
         <RepositoryUrl>https://github.com/kunah/SpawnDto</RepositoryUrl>
-        <Description>DotNet tool to generate DTOs from models.</Description>
+        <Description>DotNet package to anotate models to generate DTOs.</Description>
     </PropertyGroup>
     
     <ItemGroup>
-      <PackageReference Include="CommandLineParser" Version="2.9.1" />
-    </ItemGroup>
-    
-    <ItemGroup>
-      <ProjectReference Include="..\SpawnDto.Core\SpawnDto.Core.csproj" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.12.0" />
     </ItemGroup>
 
 </Project>
