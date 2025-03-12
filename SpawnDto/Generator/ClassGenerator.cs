@@ -22,7 +22,7 @@ public class ClassGenerator
             Directory.CreateDirectory(convertorOutputPath);
         var attribute = classType.GetCustomAttribute(typeof(GenerateDtoAttribute));
 
-        if (attribute == null || !(attribute is GenerateDtoAttribute atr))
+        if (attribute == null || attribute is not GenerateDtoAttribute atr)
             throw new ArgumentNullException($"{classType.FullName} does not have a GenerateDtoAttribute");
         
         List<MethodDeclarationSyntax> methods = new ();
@@ -75,6 +75,16 @@ public class ClassGenerator
     {
         var newClass = SyntaxFactory.ClassDeclaration(className)
             .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.PartialKeyword));
+            
+        var atr = classType.GetCustomAttribute(typeof(DtoBaseAttribute));
+        
+        if (atr != null && atr is DtoBaseAttribute baseAttribute)
+        {
+            newClass = newClass.AddBaseListTypes(SyntaxFactory.SimpleBaseType(
+                SyntaxFactory.IdentifierName(baseAttribute.BaseType.Name)));
+            if(baseAttribute.BaseType.Namespace != null)
+                namespaces.Add(baseAttribute.BaseType.Namespace);
+        }
         
         classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>

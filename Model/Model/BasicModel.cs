@@ -2,20 +2,27 @@ using SpawnDto.Core.Attributes;
 
 namespace Model.Model;
 
-public static class BasicConvertor
+public interface IConvertor<TFrom, TTo>
+{
+    static abstract TTo ToDto(TFrom field);
+    static abstract TFrom ToField(TTo dto);
+}
+
+public class BasicConvertor : IConvertor<string, int>
 {
     public static int ToDto(string field)
     {
         return field.GetHashCode();
     }
 
-    public static string ToField(int? dto)
+    public static string ToField(int dto)
     {
         return dto.ToString() ?? string.Empty;
     }
 }
 
 [GenerateDto("BasicModelDto", "FullBasic")]
+[DtoBase("BaseDto")]
 public class BasicModel
 {
     [SpawnDto(["FullBasic"], typeof(int), typeof(BasicConvertor), nameof(BasicConvertor.ToDto), nameof(BasicConvertor.ToField))]

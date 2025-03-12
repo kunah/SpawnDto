@@ -2,7 +2,7 @@ using System;
 
 namespace DTOs.Dto
 {
-    public partial class BasicModelDto
+    public partial class BasicModelDto : BaseDto
     {
         public String Test { get; set; } = "test";
         public Single Test2 { get; set; } = 1.1F;

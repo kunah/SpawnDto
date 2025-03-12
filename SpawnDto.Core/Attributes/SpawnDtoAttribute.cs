@@ -43,14 +43,14 @@ public class SpawnDtoAttribute : Attribute
     public SpawnDtoAttribute(string? targetTypeString, bool willBeGenerated) : this(targetTypeString, null, null, null, willBeGenerated) {}
     
     public SpawnDtoAttribute(string? targetTypeString, Type? convertor, string? toDtoMethod, string? fromDtoMethod, bool willBeGenerated = false)
-        : this(null, [], CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
+        : this(null, [], Helpers.CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
     
     public SpawnDtoAttribute(Type? targetType, Type? convertor, string? toDtoMethod, string? fromDtoMethod, bool willBeGenerated = false)
         : this(null, [], targetType, convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
 
     public SpawnDtoAttribute(string? customName, string? targetTypeString = null, Type? convertor = null,
         string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
-        : this(customName, [], CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
+        : this(customName, [], Helpers.CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) {}
         
     public SpawnDtoAttribute(string? customName, Type? targetType = null, Type? convertor = null,
         string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
@@ -58,7 +58,7 @@ public class SpawnDtoAttribute : Attribute
     
     public SpawnDtoAttribute(string[] dtoNames, string? targetTypeString = null,
         Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
-        : this(null, dtoNames, CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) { }
+        : this(null, dtoNames, Helpers.CreateType(targetTypeString), convertor, toDtoMethod, fromDtoMethod, willBeGenerated) { }
     
     public SpawnDtoAttribute(string[] dtoNames, Type? targetType = null,
         Type? convertor = null, string? toDtoMethod = null, string? fromDtoMethod = null, bool willBeGenerated = false)
@@ -107,19 +107,6 @@ public class SpawnDtoAttribute : Attribute
         _targetType = targetType;
         _convertor = convertor;
         _willBeGenerated = willBeGenerated;
-    }
-
-    private static Type? CreateType(string? name)
-    {
-        if(name == null)
-            return null;
-        
-        AssemblyName assemblyName = new AssemblyName("DynamicAssembly");
-        AssemblyBuilder assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.Run);
-        ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule("DynamicModule");
-        
-        var typeBuilder = moduleBuilder.DefineType(name, TypeAttributes.Class | TypeAttributes.Public);
-        return typeBuilder.CreateType();
     }
     
 }
