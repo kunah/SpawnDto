@@ -1,12 +1,7 @@
 using SpawnDto.Core.Attributes;
+using SpawnDto.Core.Convertors;
 
 namespace Model.Model;
-
-public interface IConvertor<TFrom, TTo>
-{
-    static abstract TTo ToDto(TFrom field);
-    static abstract TFrom ToField(TTo dto);
-}
 
 public class BasicConvertor : IConvertor<string, int>
 {
@@ -25,7 +20,7 @@ public class BasicConvertor : IConvertor<string, int>
 [DtoBase("BaseDto")]
 public class BasicModel
 {
-    [SpawnDto(["FullBasic"], typeof(int), typeof(BasicConvertor), nameof(BasicConvertor.ToDto), nameof(BasicConvertor.ToField))]
+    [SpawnDto(["FullBasic"], typeof(int), typeof(BasicConvertor))]
     [SpawnDto(["BasicModelDto"])]
     public string? Test { get; set; } = "test";
     
