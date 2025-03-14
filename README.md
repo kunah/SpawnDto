@@ -30,3 +30,7 @@ Add this to you .csproj file.
 ```
 
 This will generate DTOs every time after the project is build.
+
+
+TODO: 
+Implement the logic for generating convertors that can be used by DI.
