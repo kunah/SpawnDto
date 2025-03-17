@@ -2,9 +2,9 @@ using SpawnDto.Core.Attributes;
 
 namespace Model.Model;
 
-[GenerateDto("SecondDto")]
+[SpawnDto("SecondDto")]
 public class SecondModel
 {
-    [SpawnDto]
+    [DtoProperty]
     public int Id { get; set; }
 }

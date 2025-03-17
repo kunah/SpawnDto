@@ -20,9 +20,9 @@ public class ClassGenerator
             Directory.CreateDirectory(outputPath);
         if(!Path.Exists(convertorOutputPath))
             Directory.CreateDirectory(convertorOutputPath);
-        var attribute = classType.GetCustomAttribute(typeof(GenerateDtoAttribute));
+        var attribute = classType.GetCustomAttribute(typeof(SpawnDtoAttribute));
 
-        if (attribute == null || attribute is not GenerateDtoAttribute atr)
+        if (attribute == null || attribute is not SpawnDtoAttribute atr)
             throw new ArgumentNullException($"{classType.FullName} does not have a GenerateDtoAttribute");
         
         List<MethodDeclarationSyntax> methods = new ();
@@ -89,10 +89,10 @@ public class ClassGenerator
         classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>
             {
-                var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
+                var attributes = info.GetCustomAttributes(typeof(DtoPropertyAttribute));
                 foreach (var attribute in attributes)
                 {
-                    if(!(attribute is SpawnDtoAttribute atr))
+                    if(!(attribute is DtoPropertyAttribute atr))
                         continue;
                     if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
                         continue;
@@ -142,10 +142,10 @@ public class ClassGenerator
         classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>
             {
-                var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
+                var attributes = info.GetCustomAttributes(typeof(DtoPropertyAttribute));
                 foreach (var attribute in attributes)
                 {
-                    if(!(attribute is SpawnDtoAttribute atr))
+                    if(!(attribute is DtoPropertyAttribute atr))
                         continue;
                     if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
                         continue;
@@ -188,10 +188,10 @@ public class ClassGenerator
         classType.GetMembers(BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty | BindingFlags.GetProperty)
             .Where(info =>
             {
-                var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
+                var attributes = info.GetCustomAttributes(typeof(DtoPropertyAttribute));
                 foreach (var attribute in attributes)
                 {
-                    if(!(attribute is SpawnDtoAttribute atr))
+                    if(!(attribute is DtoPropertyAttribute atr))
                         continue;
                     if(atr.Dtos.Length > 0 && !atr.Dtos.Contains(className))
                         continue;
@@ -208,12 +208,12 @@ public class ClassGenerator
     
     private ExpressionStatementSyntax GenerateValueConversion(MemberInfo info, string className, HashSet<string> namespaces, bool toDto = true)
     {
-        SpawnDtoAttribute? attribute = null;
+        DtoPropertyAttribute? attribute = null;
         
-        var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
+        var attributes = info.GetCustomAttributes(typeof(DtoPropertyAttribute));
         foreach (var potentionalAttribute in attributes)
         {
-            if(!(potentionalAttribute is SpawnDtoAttribute atrref))
+            if(!(potentionalAttribute is DtoPropertyAttribute atrref))
                 continue;
             if(atrref.Dtos.Length > 0 && !atrref.Dtos.Contains(className))
                 continue;
@@ -295,12 +295,12 @@ public class ClassGenerator
     
     private PropertyDeclarationSyntax GenerateProperty(MemberInfo info, string className, HashSet<string> namespaces)
     {
-        SpawnDtoAttribute? attribute = null;
+        DtoPropertyAttribute? attribute = null;
         
-        var attributes = info.GetCustomAttributes(typeof(SpawnDtoAttribute));
+        var attributes = info.GetCustomAttributes(typeof(DtoPropertyAttribute));
         foreach (var potentionalAttribute in attributes)
         {
-            if(!(potentionalAttribute is SpawnDtoAttribute atrref))
+            if(!(potentionalAttribute is DtoPropertyAttribute atrref))
                 continue;
             if(atrref.Dtos.Length > 0 && !atrref.Dtos.Contains(className))
                 continue;
@@ -389,7 +389,7 @@ public class ClassGenerator
         throw new ArgumentException("Invalid member info");
     }
     
-    private object? GetMemberValue(MemberInfo memberInfo, SpawnDtoAttribute atr)
+    private object? GetMemberValue(MemberInfo memberInfo, DtoPropertyAttribute atr)
     {
         object? value = null;
         if(memberInfo.ReflectedType == null)

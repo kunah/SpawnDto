@@ -16,24 +16,24 @@ public class BasicConvertor : IConvertor<string, int>
     }
 }
 
-[GenerateDto("BasicModelDto", "FullBasic")]
+[SpawnDto("BasicModelDto", "FullBasic")]
 [DtoBase("BaseDto")]
 public class BasicModel
 {
-    [SpawnDto(["FullBasic"], typeof(int), typeof(BasicConvertor))]
-    [SpawnDto(["BasicModelDto"])]
+    [DtoProperty(["FullBasic"], typeof(int), typeof(BasicConvertor))]
+    [DtoProperty(["BasicModelDto"])]
     public string? Test { get; set; } = "test";
     
-    [SpawnDto(["BasicModelDto"])]
+    [DtoProperty(["BasicModelDto"])]
     public float Test2 = 1.1f;
 
-    [SpawnDto("DtoName")] 
+    [DtoProperty("DtoName")] 
     public string? Name = string.Empty;
     
-    [SpawnDto]
+    [DtoProperty]
     public string Always = string.Empty;
 
-    [SpawnDto("SecondDto", true )]
+    [DtoProperty("SecondDto", true )]
     public SecondModel model;
     
     public string Never = string.Empty;

@@ -2,9 +2,9 @@ using SpawnDto.Core.Attributes;
 
 namespace Model.Model;
 
-[GenerateDto("BaseDto")]
+[SpawnDto("BaseDto")]
 public class BaseModel
 {
-    [SpawnDto]
+    [DtoProperty]
     public int Id;
 }

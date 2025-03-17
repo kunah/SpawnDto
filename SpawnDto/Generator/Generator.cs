@@ -30,7 +30,7 @@ public class Generator
 
         var types = assembly.GetTypes();
         
-        var classes = types.Where(type => type.GetCustomAttribute(typeof(GenerateDtoAttribute)) != null).ToArray();
+        var classes = types.Where(type => type.GetCustomAttribute(typeof(SpawnDtoAttribute)) != null).ToArray();
 
         Console.WriteLine(Directory.GetCurrentDirectory());
         
